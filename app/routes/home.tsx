@@ -1,13 +1,65 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { useGameState } from "../hooks/useGameState";
+import { ScoreBoard } from "../components/ScoreBoard";
+import { ScoreInput } from "../components/ScoreInput";
+import { GameHistory } from "../components/GameHistory";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "麻雀点数計算" },
+    { name: "description", content: "麻雀の点数を記録・表示するWEBアプリケーション" },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  const {
+    gameState,
+    startNewGame,
+    updatePlayerName,
+    updateScores,
+    nextRound,
+    addRiichiStick,
+    clearRiichiSticks,
+    declareRiichi,
+    checkGameEnd,
+  } = useGameState();
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+      <div className="container mx-auto px-4 space-y-6">
+        <ScoreBoard
+          gameState={gameState}
+          onUpdatePlayerName={updatePlayerName}
+          onStartNewGame={startNewGame}
+          onDeclareRiichi={declareRiichi}
+        />
+        
+        {gameState.gameStarted && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ScoreInput
+              players={gameState.players}
+              dealerWins={gameState.dealerWins}
+              riichiSticks={gameState.riichiSticks}
+              carryOverRiichiSticks={gameState.carryOverRiichiSticks}
+              gamePhase={gameState.gamePhase}
+              gameEnded={gameState.gameEnded}
+              onScoreUpdate={(scoreChanges, description, dealerWon, wasDraw) => 
+                updateScores(scoreChanges, description, dealerWon, wasDraw)
+              }
+              onNextRound={nextRound}
+              onAddRiichiStick={addRiichiStick}
+              onClearRiichiSticks={clearRiichiSticks}
+              onDeclareRiichi={declareRiichi}
+            />
+            
+            <GameHistory
+              history={gameState.history}
+              players={gameState.players}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
