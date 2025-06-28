@@ -1,51 +1,21 @@
 import { useState, useEffect } from 'react';
-
-export type Player = {
-  id: string;
-  name: string;
-  score: number;
-  isDealer: boolean;
-  wind: '東' | '南' | '西' | '北';
-  isRiichi: boolean;
-};
-
-export type GameRound = {
-  round: number;
-  dealerWins: number;
-  riichiSticks: number;
-  carryOverRiichiSticks?: number; // この局開始時の供託リーチ棒数（オプション）
-  scores: { [playerId: string]: number };
-  description: string;
-  timestamp: Date;
-  riichiDeclarers?: string[]; // この局でリーチした人のID（オプション）
-};
-
-export type GameState = {
-  players: Player[];
-  currentRound: number;
-  dealerWins: number;
-  riichiSticks: number;
-  carryOverRiichiSticks: number; // 前局から持ち越された供託リーチ棒
-  history: GameRound[];
-  gameStarted: boolean;
-  gameEnded: boolean;
-  gamePhase: 'playing' | 'scored' | 'between_rounds';
-  lastRoundResult?: {
-    dealerWon: boolean;
-    description: string;
-    wasDraw: boolean;
-  };
-};
-
-const INITIAL_SCORE = 25000;
+import { GAME_CONSTANTS, WINDS } from '../constants/game';
+import type { Player, GameState, GameRound, LastRoundResult } from '../types/game';
+import { 
+  getRoundName, 
+  getNextDealerIndex, 
+  rotateWinds, 
+  isSouthFour, 
+  shouldEndGame 
+} from '../utils/gameHelpers';
 const STORAGE_KEY = 'mahjong-game-state';
 
 const initialState: GameState = {
   players: [
-    { id: '1', name: '東家', score: INITIAL_SCORE, isDealer: true, wind: '東', isRiichi: false },
-    { id: '2', name: '南家', score: INITIAL_SCORE, isDealer: false, wind: '南', isRiichi: false },
-    { id: '3', name: '西家', score: INITIAL_SCORE, isDealer: false, wind: '西', isRiichi: false },
-    { id: '4', name: '北家', score: INITIAL_SCORE, isDealer: false, wind: '北', isRiichi: false },
+    { id: '1', name: '東家', score: GAME_CONSTANTS.INITIAL_SCORE, isDealer: true, wind: '東', isRiichi: false },
+    { id: '2', name: '南家', score: GAME_CONSTANTS.INITIAL_SCORE, isDealer: false, wind: '南', isRiichi: false },
+    { id: '3', name: '西家', score: GAME_CONSTANTS.INITIAL_SCORE, isDealer: false, wind: '西', isRiichi: false },
+    { id: '4', name: '北家', score: GAME_CONSTANTS.INITIAL_SCORE, isDealer: false, wind: '北', isRiichi: false },
   ],
   currentRound: 1,
   dealerWins: 0,
@@ -92,9 +62,9 @@ export const useGameState = () => {
       carryOverRiichiSticks: 0,
       players: gameState.players.map((p, index) => ({
         ...p,
-        score: INITIAL_SCORE,
+        score: GAME_CONSTANTS.INITIAL_SCORE,
         isDealer: index === 0,
-        wind: ['東', '南', '西', '北'][index] as '東' | '南' | '西' | '北',
+        wind: WINDS[index],
         isRiichi: false,
       })),
     });
@@ -175,7 +145,7 @@ export const useGameState = () => {
           // 親がノーテンの場合は親流れだが本場は+2
           
           // 南4局で親がノーテンの場合はゲーム終了
-          if (prev.currentRound === 8) {
+          if (isSouthFour(prev.currentRound)) {
             return {
               ...prev,
               gameEnded: true,
@@ -185,15 +155,8 @@ export const useGameState = () => {
           }
           
           const currentDealerIndex = prev.players.findIndex((p) => p.isDealer);
-          const nextDealerIndex = (currentDealerIndex + 1) % 4;
-
-          const winds: Array<'東' | '南' | '西' | '北'> = ['東', '南', '西', '北'];
-          const rotatedPlayers = prev.players.map((player, index) => ({
-            ...player,
-            isDealer: index === nextDealerIndex,
-            wind: winds[(index - nextDealerIndex + 4) % 4],
-            isRiichi: false,
-          }));
+          const nextDealerIndex = getNextDealerIndex(currentDealerIndex);
+          const rotatedPlayers = rotateWinds(prev.players, nextDealerIndex);
 
           return {
             ...prev,
@@ -227,7 +190,7 @@ export const useGameState = () => {
       // 子の和了の場合は親流れ、本場リセット
       
       // 南4局で子が和了した場合はゲーム終了
-      if (prev.currentRound === 8) {
+      if (isSouthFour(prev.currentRound)) {
         return {
           ...prev,
           gameEnded: true,
@@ -237,16 +200,8 @@ export const useGameState = () => {
       }
       
       const currentDealerIndex = prev.players.findIndex((p) => p.isDealer);
-      const nextDealerIndex = (currentDealerIndex + 1) % 4;
-
-      // 親が変わる時は風を回転させる
-      const winds: Array<'東' | '南' | '西' | '北'> = ['東', '南', '西', '北'];
-      const rotatedPlayers = prev.players.map((player, index) => ({
-        ...player,
-        isDealer: index === nextDealerIndex,
-        wind: winds[(index - nextDealerIndex + 4) % 4],
-        isRiichi: false, // 新しい局ではリーチ状態をリセット
-      }));
+      const nextDealerIndex = getNextDealerIndex(currentDealerIndex);
+      const rotatedPlayers = rotateWinds(prev.players, nextDealerIndex);
 
       return {
         ...prev,
@@ -280,7 +235,7 @@ export const useGameState = () => {
       ...prev,
       players: prev.players.map((player) =>
         player.id === playerId
-          ? { ...player, isRiichi: true, score: player.score - 1000 }
+          ? { ...player, isRiichi: true, score: player.score - GAME_CONSTANTS.RIICHI_COST }
           : player
       ),
       riichiSticks: prev.riichiSticks + 1,
@@ -289,22 +244,7 @@ export const useGameState = () => {
 
 
   const checkGameEnd = () => {
-    const hasNegativeScore = gameState.players.some(p => p.score < 0);
-    const isAfterSouthFour = gameState.currentRound > 8; // 南4局より後
-    
-    if (hasNegativeScore) {
-      // 誰かがマイナス点になったら即終了
-      return true;
-    }
-    
-    if (isAfterSouthFour) {
-      // 南4局より後（西場以降）は無条件で終了
-      return true;
-    }
-    
-    // 南4局の場合は、局が終了した後に親の状況を確認
-    // ここではfalseを返し、nextRound内で適切に判定する
-    return false;
+    return shouldEndGame(gameState.players, gameState.currentRound);
   };
 
   return {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { GameState } from '../hooks/useGameState';
+import type { GameState } from '../types/game';
+import { getRoundName } from '../utils/gameHelpers';
 import { PlayerScore } from './PlayerScore';
 
 interface ScoreBoardProps {
@@ -15,12 +16,6 @@ export function ScoreBoard({ gameState, onUpdatePlayerName, onStartNewGame, onDe
   const sortedPlayers = [...gameState.players].sort((a, b) => b.score - a.score);
   const playerRanks = new Map(sortedPlayers.map((player, index) => [player.id, index + 1]));
 
-  const getRoundName = (round: number) => {
-    if (round <= 4) return `東${round}局`;
-    if (round <= 8) return `南${round - 4}局`;
-    if (round <= 12) return `西${round - 8}局`;
-    return `北${round - 12}局`;
-  };
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4">

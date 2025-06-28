@@ -1,4 +1,4 @@
-import type { Player } from '../hooks/useGameState';
+import type { Player } from '../types/game';
 
 interface PlayerScoreProps {
   player: Player;
