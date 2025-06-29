@@ -62,6 +62,7 @@ export function ScoreBoard({ gameState, onUpdatePlayerName, onStartNewGame, onDe
               key={player.id}
               player={player}
               rank={playerRanks.get(player.id) || 0}
+              allPlayers={gameState.players}
               onNameChange={(name) => onUpdatePlayerName(player.id, name)}
               isEditing={isEditingNames}
               onDeclareRiichi={() => onDeclareRiichi(player.id)}

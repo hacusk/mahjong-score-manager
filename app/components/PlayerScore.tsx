@@ -3,13 +3,14 @@ import type { Player } from '../types/game';
 interface PlayerScoreProps {
   player: Player;
   rank: number;
+  allPlayers: Player[];
   onNameChange?: (name: string) => void;
   isEditing?: boolean;
   onDeclareRiichi?: () => void;
   gameStarted?: boolean;
 }
 
-export function PlayerScore({ player, rank, onNameChange, isEditing = false, onDeclareRiichi, gameStarted = false }: PlayerScoreProps) {
+export function PlayerScore({ player, rank, allPlayers, onNameChange, isEditing = false, onDeclareRiichi, gameStarted = false }: PlayerScoreProps) {
   const getRankEmoji = (rank: number) => {
     switch (rank) {
       case 1: return '🥇';
@@ -77,8 +78,21 @@ export function PlayerScore({ player, rank, onNameChange, isEditing = false, onD
         <div className={`text-3xl font-bold ${getScoreColor(player.score)}`}>
           {player.score.toLocaleString()}
         </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          {player.score >= 30000 ? '+' : ''}{(player.score - 25000).toLocaleString()}
+        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 space-y-1">
+          {allPlayers
+            .filter(p => p.id !== player.id)
+            .sort((a, b) => b.score - a.score)
+            .map(otherPlayer => {
+              const diff = player.score - otherPlayer.score;
+              return (
+                <div key={otherPlayer.id} className="flex justify-between items-center">
+                  <span className="truncate mr-2">{otherPlayer.name}:</span>
+                  <span className={`font-medium ${diff >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {diff >= 0 ? '+' : ''}{diff.toLocaleString()}
+                  </span>
+                </div>
+              );
+            })}
         </div>
         
         {player.isRiichi && (
