@@ -1,15 +1,19 @@
-import type { Player, PlayerStats } from '../types/game';
+import type { Player, PlayerStats, GameRound } from '../types/game';
+import { LABELS } from '../constants/text';
 
 interface GameStatsProps {
   players: Player[];
   playerStats: { [playerId: string]: PlayerStats };
+  gameHistory: GameRound[];
 }
 
-export function GameStats({ players, playerStats }: GameStatsProps) {
+export function GameStats({ players, playerStats, gameHistory }: GameStatsProps) {
+  // Calculate total draws from game history
+  const totalDraws = gameHistory.filter(round => round.winType === 'draw').length;
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-        対局統計
+        {LABELS.GAME_STATS}
       </h2>
       
       <div className="overflow-x-auto">
@@ -20,19 +24,19 @@ export function GameStats({ players, playerStats }: GameStatsProps) {
                 プレイヤー
               </th>
               <th className="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                最終得点
+                {LABELS.FINAL_SCORE}
               </th>
               <th className="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                順位
+                {LABELS.RANK}
               </th>
               <th className="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                リーチ回数
+                {LABELS.RIICHI_COUNT}
               </th>
               <th className="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                和了回数
+                {LABELS.WIN_COUNT}
               </th>
               <th className="text-center py-3 px-2 font-medium text-gray-700 dark:text-gray-300">
-                放銃回数
+                {LABELS.DEAL_IN_COUNT}
               </th>
             </tr>
           </thead>
@@ -97,10 +101,10 @@ export function GameStats({ players, playerStats }: GameStatsProps) {
         </table>
       </div>
       
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            総リーチ回数
+            {LABELS.TOTAL_RIICHI}
           </h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {Object.values(playerStats).reduce((sum, stats) => sum + stats.riichiCount, 0)}
@@ -109,7 +113,7 @@ export function GameStats({ players, playerStats }: GameStatsProps) {
         
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            総和了回数
+            {LABELS.TOTAL_WINS}
           </h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {Object.values(playerStats).reduce((sum, stats) => sum + stats.winCount, 0)}
@@ -118,10 +122,19 @@ export function GameStats({ players, playerStats }: GameStatsProps) {
         
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
           <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            総放銃回数
+            {LABELS.TOTAL_DEAL_INS}
           </h3>
           <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             {Object.values(playerStats).reduce((sum, stats) => sum + stats.dealInCount, 0)}
+          </p>
+        </div>
+        
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {LABELS.TOTAL_DRAWS}
+          </h3>
+          <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            {totalDraws}
           </p>
         </div>
       </div>

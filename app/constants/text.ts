@@ -37,9 +37,11 @@ export const LABELS = {
   RIICHI_COUNT: 'リーチ回数',
   WIN_COUNT: '和了回数',
   DEAL_IN_COUNT: '放銃回数',
+  DRAW_COUNT: '流局回数',
   TOTAL_RIICHI: '総リーチ回数',
   TOTAL_WINS: '総和了回数',
   TOTAL_DEAL_INS: '総放銃回数',
+  TOTAL_DRAWS: '総流局回数',
 
   // Player placeholder
   PLAYER_NAME_PLACEHOLDER: 'プレイヤー名',

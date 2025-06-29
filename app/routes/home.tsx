@@ -66,6 +66,7 @@ export default function Home() {
               <GameStats
                 players={gameState.players}
                 playerStats={calculatePlayerStats()}
+                gameHistory={gameState.history}
               />
             )}
           </div>

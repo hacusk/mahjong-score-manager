@@ -276,8 +276,8 @@ export const useGameState = () => {
         });
       }
 
-      // Count wins
-      if (round.winnerId && stats[round.winnerId]) {
+      // Count wins (only tsumo and ron, exclude draws)
+      if (round.winnerId && stats[round.winnerId] && (round.winType === 'tsumo' || round.winType === 'ron')) {
         stats[round.winnerId].winCount++;
       }
 
