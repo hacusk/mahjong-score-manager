@@ -20,6 +20,14 @@ export type GamePhase = 'playing' | 'scored' | 'between_rounds';
 // 和了タイプの定義
 export type WinType = 'tsumo' | 'ron' | 'draw';
 
+// 点数オプションの型定義
+export interface ScoreOption {
+  label: string;
+  value: number;
+  tsumo: string;
+  desc: string;
+}
+
 // 点数表の定義
 export const SCORE_TABLES = {
   child: [

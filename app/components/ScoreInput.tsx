@@ -8,6 +8,9 @@ import {
   calculateRonScoreChanges, 
   calculateDrawScoreChanges 
 } from '../utils/gameHelpers';
+import { WinTypeSelector, PlayerSelector, TenpaiSelector, ScoreSelector } from './score-input';
+import { Card, Button } from './ui';
+import { LABELS, GAME_DESCRIPTIONS } from '../constants/text';
 
 interface ScoreInputProps {
   players: Player[];
@@ -134,191 +137,96 @@ export function ScoreInput({
 
   if (gameEnded) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
+      <Card>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-          ゲーム終了
+          {LABELS.GAME_ENDED}
         </h2>
         <p className="text-gray-600 dark:text-gray-400 text-center py-8">
-          麻雀ゲームが終了しました。<br />
-          新しいゲームを開始するには「新規ゲーム」ボタンを押してください。
+          {GAME_DESCRIPTIONS.GAME_END_MESSAGE}
         </p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
+    <Card>
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
-        点数入力
+        {LABELS.SCORE_INPUT}
       </h2>
       
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            結果
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              onClick={() => setWinType('tsumo')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                winType === 'tsumo'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              ツモ
-            </button>
-            <button
-              onClick={() => setWinType('ron')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                winType === 'ron'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              ロン
-            </button>
-            <button
-              onClick={() => setWinType('draw')}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                winType === 'draw'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              流局
-            </button>
-          </div>
-        </div>
+        <WinTypeSelector 
+          winType={winType}
+          onWinTypeChange={setWinType}
+        />
 
         {winType === 'draw' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              聴牌者を選択
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {players.map(player => (
-                <label key={player.id} className={`flex items-center gap-2 ${player.isRiichi ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}>
-                  <input
-                    type="checkbox"
-                    checked={effectiveTenpaiPlayers.includes(player.id)}
-                    disabled={player.isRiichi}
-                    onChange={(e) => {
-                      if (!player.isRiichi) {
-                        if (e.target.checked) {
-                          setTenpaiPlayers([...tenpaiPlayers, player.id]);
-                        } else {
-                          setTenpaiPlayers(tenpaiPlayers.filter(id => id !== player.id));
-                        }
-                      }
-                    }}
-                    className="w-4 h-4 text-blue-600 bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:opacity-50"
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {player.name} ({player.wind})
-                    {player.isRiichi && <span className="text-red-600 text-xs ml-1">(リーチ中)</span>}
-                  </span>
-                </label>
-              ))}
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              リーチ中のプレイヤーは自動的に聴牌になります
-            </p>
-          </div>
+          <TenpaiSelector
+            players={players}
+            tenpaiPlayers={tenpaiPlayers}
+            onTenpaiChange={(playerId, isTenpai) => {
+              if (isTenpai) {
+                setTenpaiPlayers([...tenpaiPlayers, playerId]);
+              } else {
+                setTenpaiPlayers(tenpaiPlayers.filter(id => id !== playerId));
+              }
+            }}
+            effectiveTenpaiPlayers={effectiveTenpaiPlayers}
+          />
         )}
 
         {winType !== 'draw' && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  和了者
-                </label>
-                <select
-                  value={winnerId}
-                  onChange={(e) => setWinnerId(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  {players.map(player => (
-                    <option key={player.id} value={player.id}>
-                      {player.name} ({player.wind})
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <PlayerSelector
+                players={players}
+                selectedPlayerId={winnerId}
+                onPlayerChange={setWinnerId}
+                label={LABELS.WINNER}
+              />
 
               {winType === 'ron' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    放銃者
-                  </label>
-                  <select
-                    value={loserId}
-                    onChange={(e) => setLoserId(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {players
-                      .filter(p => p.id !== winnerId)
-                      .map(player => (
-                        <option key={player.id} value={player.id}>
-                          {player.name} ({player.wind})
-                        </option>
-                      ))}
-                  </select>
-                </div>
+                <PlayerSelector
+                  players={players}
+                  selectedPlayerId={loserId}
+                  onPlayerChange={setLoserId}
+                  label={LABELS.LOSER}
+                  excludePlayerId={winnerId}
+                />
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                点数選択 {isWinnerDealer ? '（親）' : '（子）'}
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-3 max-h-96 overflow-y-auto">
-                {scoreOptions.map(score => (
-                  <button
-                    key={score.value}
-                    onClick={() => setSelectedScore(score.value)}
-                    className={`p-2 rounded-lg text-xs font-medium transition-colors ${
-                      selectedScore === score.value
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                    }`}
-                  >
-                    <div className="font-bold text-sm">{score.label}</div>
-                    <div className="text-xs mt-1 opacity-70">
-                      {score.desc}
-                    </div>
-                    {winType === 'tsumo' && (
-                      <div className="text-xs mt-1 opacity-80 border-t border-current pt-1">
-                        {score.tsumo}
-                      </div>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <ScoreSelector
+              scoreOptions={scoreOptions}
+              selectedScore={selectedScore}
+              onScoreChange={setSelectedScore}
+              winType={winType}
+              isDealer={isWinnerDealer}
+            />
 
           </>
         )}
 
         <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
           {gamePhase === 'playing' ? (
-            <button
+            <Button 
               onClick={handleSubmit}
-              className="w-full px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
+              variant="success"
+              fullWidth
             >
-              確定
-            </button>
+              {LABELS.CONFIRM}
+            </Button>
           ) : (
-            <button
+            <Button 
               onClick={onNextRound}
-              className="w-full px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+              variant="primary"
+              fullWidth
             >
-              次局へ
-            </button>
+              {LABELS.NEXT_ROUND}
+            </Button>
           )}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
