@@ -55,6 +55,16 @@ export function ScoreInput({
     setSelectedScore(isWinnerDealer ? 12000 : 8000);
   }, [isWinnerDealer]);
 
+  useEffect(() => {
+    // 和了者が変更されたとき、放銃者が和了者と同じ場合は別のプレイヤーに変更
+    if (winType === 'ron' && loserId === winnerId) {
+      const availableLosers = players.filter(p => p.id !== winnerId);
+      if (availableLosers.length > 0) {
+        setLoserId(availableLosers[0].id);
+      }
+    }
+  }, [winnerId, winType, loserId, players]);
+
 
 
 
@@ -73,7 +83,12 @@ export function ScoreInput({
         riichiSticks,
         carryOverRiichiSticks
       );
-      description = `${winner?.name}がツモ (${selectedScore}点)`;
+      const { dealerPay, childPay } = getTsumoPayments(selectedScore, isWinnerDealer);
+      if (isWinnerDealer) {
+        description = `${winner?.name}がツモ (子${childPay}オール)`;
+      } else {
+        description = `${winner?.name}がツモ (子${childPay}/親${dealerPay})`;
+      }
     } else if (winType === 'ron') {
       scoreChanges = calculateRonScoreChanges(
         players,
