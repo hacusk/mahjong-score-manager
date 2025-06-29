@@ -16,7 +16,7 @@ interface ScoreInputProps {
   carryOverRiichiSticks: number;
   gamePhase: 'playing' | 'scored' | 'between_rounds';
   gameEnded: boolean;
-  onScoreUpdate: (scoreChanges: ScoreChanges, description: string, dealerWon: boolean, wasDraw?: boolean) => void;
+  onScoreUpdate: (scoreChanges: ScoreChanges, description: string, dealerWon: boolean, wasDraw?: boolean, winnerId?: string, loserId?: string, winType?: 'tsumo' | 'ron' | 'draw') => void;
   onNextRound: () => void;
   onAddRiichiStick: () => void;
   onClearRiichiSticks: () => void;
@@ -124,7 +124,7 @@ export function ScoreInput({
       dealerWon = isWinnerDealer;
     }
     
-    onScoreUpdate(scoreChanges, description, dealerWon, winType === 'draw');
+    onScoreUpdate(scoreChanges, description, dealerWon, winType === 'draw', winnerId, loserId, winType);
     
     setSelectedScore(8000);
     setTenpaiPlayers([]);

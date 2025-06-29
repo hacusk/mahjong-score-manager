@@ -18,6 +18,9 @@ export interface GameRound {
   description: string;
   timestamp: Date;
   riichiDeclarers?: string[]; // この局でリーチした人のID（オプション）
+  winnerId?: string; // 和了者のID（ツモ・ロンの場合）
+  loserId?: string; // 放銃者のID（ロンの場合）
+  winType?: 'tsumo' | 'ron' | 'draw'; // 局の結果タイプ
 }
 
 export interface LastRoundResult {
@@ -46,4 +49,10 @@ export interface ScoreChanges {
 export interface TsumoPayment {
   dealerPay: number;
   childPay: number;
+}
+
+export interface PlayerStats {
+  riichiCount: number;
+  winCount: number;
+  dealInCount: number;
 }

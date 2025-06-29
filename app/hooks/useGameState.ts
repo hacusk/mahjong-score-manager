@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { GAME_CONSTANTS, WINDS } from '../constants/game';
-import type { Player, GameState, GameRound, LastRoundResult } from '../types/game';
+import type { Player, GameState, GameRound, LastRoundResult, PlayerStats } from '../types/game';
 import { 
   getRoundName, 
   getNextDealerIndex, 
@@ -83,7 +83,10 @@ export const useGameState = () => {
     scoreChanges: { [playerId: string]: number },
     description: string,
     dealerWon: boolean,
-    wasDraw: boolean = false
+    wasDraw: boolean = false,
+    winnerId?: string,
+    loserId?: string,
+    winType?: 'tsumo' | 'ron' | 'draw'
   ) => {
     setGameState((prev) => {
       const newPlayers = prev.players.map((player) => ({
@@ -103,6 +106,9 @@ export const useGameState = () => {
         description,
         timestamp: new Date(),
         riichiDeclarers,
+        winnerId,
+        loserId,
+        winType,
       };
 
       return {
@@ -247,6 +253,43 @@ export const useGameState = () => {
     return shouldEndGame(gameState.players, gameState.currentRound);
   };
 
+  const calculatePlayerStats = (): { [playerId: string]: PlayerStats } => {
+    const stats: { [playerId: string]: PlayerStats } = {};
+    
+    // Initialize stats for all players
+    gameState.players.forEach(player => {
+      stats[player.id] = {
+        riichiCount: 0,
+        winCount: 0,
+        dealInCount: 0,
+      };
+    });
+
+    // Calculate stats from history
+    gameState.history.forEach(round => {
+      // Count riichi declarations
+      if (round.riichiDeclarers) {
+        round.riichiDeclarers.forEach(playerId => {
+          if (stats[playerId]) {
+            stats[playerId].riichiCount++;
+          }
+        });
+      }
+
+      // Count wins
+      if (round.winnerId && stats[round.winnerId]) {
+        stats[round.winnerId].winCount++;
+      }
+
+      // Count deal-ins (only for ron)
+      if (round.winType === 'ron' && round.loserId && stats[round.loserId]) {
+        stats[round.loserId].dealInCount++;
+      }
+    });
+
+    return stats;
+  };
+
   return {
     gameState,
     startNewGame,
@@ -257,5 +300,6 @@ export const useGameState = () => {
     clearRiichiSticks,
     declareRiichi,
     checkGameEnd,
+    calculatePlayerStats,
   };
 };
