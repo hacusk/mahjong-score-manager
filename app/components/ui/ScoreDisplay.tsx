@@ -1,13 +1,18 @@
-import { SCORE_THRESHOLDS, SCORE_COLORS, TEXT_SIZES } from '../../constants/ui';
+import { SCORE_COLORS, SCORE_THRESHOLDS, TEXT_SIZES } from "../../constants/ui";
 
 interface ScoreDisplayProps {
   score: number;
   showChange?: boolean;
   change?: number;
-  size?: 'small' | 'normal' | 'large';
+  size?: "small" | "normal" | "large";
 }
 
-export function ScoreDisplay({ score, showChange = false, change = 0, size = 'normal' }: ScoreDisplayProps) {
+export function ScoreDisplay({
+  score,
+  showChange = false,
+  change = 0,
+  size = "normal",
+}: ScoreDisplayProps) {
   const getScoreColor = (score: number): string => {
     if (score >= SCORE_THRESHOLDS.EXCELLENT) return SCORE_COLORS.EXCELLENT;
     if (score >= SCORE_THRESHOLDS.GOOD) return SCORE_COLORS.GOOD;
@@ -23,9 +28,12 @@ export function ScoreDisplay({ score, showChange = false, change = 0, size = 'no
 
   const getSizeClass = (size: string): string => {
     switch (size) {
-      case 'small': return 'text-lg font-medium';
-      case 'large': return 'text-4xl font-bold';
-      default: return TEXT_SIZES.SCORE_MAIN;
+      case "small":
+        return "text-lg font-medium";
+      case "large":
+        return "text-4xl font-bold";
+      default:
+        return TEXT_SIZES.SCORE_MAIN;
     }
   };
 
@@ -35,8 +43,11 @@ export function ScoreDisplay({ score, showChange = false, change = 0, size = 'no
         {score.toLocaleString()}
       </div>
       {showChange && (
-        <div className={`${TEXT_SIZES.SCORE_DIFF} ${getChangeColor(change)} mt-1`}>
-          {change > 0 && '+'}{change.toLocaleString()}
+        <div
+          className={`${TEXT_SIZES.SCORE_DIFF} ${getChangeColor(change)} mt-1`}
+        >
+          {change > 0 && "+"}
+          {change.toLocaleString()}
         </div>
       )}
     </div>

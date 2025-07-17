@@ -1,6 +1,6 @@
-import type { Player } from '../../types/game';
-import { LABELS, GAME_DESCRIPTIONS } from '../../constants/text';
-import { GRID_LAYOUTS } from '../../constants/ui';
+import { GAME_DESCRIPTIONS, LABELS } from "../../constants/text";
+import { GRID_LAYOUTS } from "../../constants/ui";
+import type { Player } from "../../types/game";
 
 interface TenpaiSelectorProps {
   players: Player[];
@@ -9,11 +9,11 @@ interface TenpaiSelectorProps {
   effectiveTenpaiPlayers: string[];
 }
 
-export function TenpaiSelector({ 
-  players, 
-  tenpaiPlayers, 
-  onTenpaiChange, 
-  effectiveTenpaiPlayers 
+export function TenpaiSelector({
+  players,
+  tenpaiPlayers,
+  onTenpaiChange,
+  effectiveTenpaiPlayers,
 }: TenpaiSelectorProps) {
   return (
     <div>
@@ -21,11 +21,13 @@ export function TenpaiSelector({
         {LABELS.SELECT_TENPAI}
       </label>
       <div className={GRID_LAYOUTS.TENPAI_SELECTION}>
-        {players.map(player => (
-          <label 
-            key={player.id} 
+        {players.map((player) => (
+          <label
+            key={player.id}
             className={`flex items-center gap-2 ${
-              player.isRiichi ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'
+              player.isRiichi
+                ? "cursor-not-allowed opacity-75"
+                : "cursor-pointer"
             }`}
           >
             <input
@@ -42,7 +44,9 @@ export function TenpaiSelector({
             <span className="text-gray-700 dark:text-gray-300">
               {player.name} ({player.wind})
               {player.isRiichi && (
-                <span className="text-red-600 text-xs ml-1">({LABELS.RIICHI_STATUS})</span>
+                <span className="text-red-600 text-xs ml-1">
+                  ({LABELS.RIICHI_STATUS})
+                </span>
               )}
             </span>
           </label>

@@ -1,4 +1,4 @@
-import type { Wind, GamePhase } from '../constants/game';
+import type { GamePhase, Wind } from "../constants/game";
 
 export interface Player {
   id: string;
@@ -20,7 +20,7 @@ export interface GameRound {
   riichiDeclarers?: string[]; // この局でリーチした人のID（オプション）
   winnerId?: string; // 和了者のID（ツモ・ロンの場合）
   loserId?: string; // 放銃者のID（ロンの場合）
-  winType?: 'tsumo' | 'ron' | 'draw'; // 局の結果タイプ
+  winType?: "tsumo" | "ron" | "draw"; // 局の結果タイプ
 }
 
 export interface LastRoundResult {

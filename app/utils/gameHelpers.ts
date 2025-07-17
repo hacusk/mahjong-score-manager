@@ -1,5 +1,5 @@
-import { GAME_CONSTANTS, WINDS, TSUMO_PAYMENTS } from '../constants/game';
-import type { Player, ScoreChanges, TsumoPayment } from '../types/game';
+import { GAME_CONSTANTS, TSUMO_PAYMENTS, WINDS } from "../constants/game";
+import type { Player, ScoreChanges, TsumoPayment } from "../types/game";
 
 /**
  * 局名を取得
@@ -22,9 +22,9 @@ export const getNextDealerIndex = (currentDealerIndex: number): number => {
  * 風を回転させてプレイヤーを更新
  */
 export const rotateWinds = (
-  players: Player[], 
+  players: Player[],
   nextDealerIndex: number,
-  resetRiichi = true
+  resetRiichi = true,
 ): Player[] => {
   return players.map((player, index) => ({
     ...player,
@@ -37,14 +37,20 @@ export const rotateWinds = (
 /**
  * ツモ時の支払い額を計算
  */
-export const getTsumoPayments = (score: number, isDealer: boolean): TsumoPayment => {
+export const getTsumoPayments = (
+  score: number,
+  isDealer: boolean,
+): TsumoPayment => {
   if (isDealer) {
     // 親の場合は子全員が同額を支払う
-    const childPay = TSUMO_PAYMENTS.dealer[score as keyof typeof TSUMO_PAYMENTS.dealer] || 0;
+    const childPay =
+      TSUMO_PAYMENTS.dealer[score as keyof typeof TSUMO_PAYMENTS.dealer] || 0;
     return { dealerPay: 0, childPay };
   } else {
     // 子の場合は親と他の子で支払い額が異なる
-    const payments = TSUMO_PAYMENTS.child[score as keyof typeof TSUMO_PAYMENTS.child] || [0, 0];
+    const payments = TSUMO_PAYMENTS.child[
+      score as keyof typeof TSUMO_PAYMENTS.child
+    ] || [0, 0];
     return { dealerPay: payments[0], childPay: payments[1] };
   }
 };
@@ -58,31 +64,36 @@ export const calculateTsumoScoreChanges = (
   selectedScore: number,
   dealerWins: number,
   riichiSticks: number,
-  carryOverRiichiSticks: number
+  carryOverRiichiSticks: number,
 ): ScoreChanges => {
   const scoreChanges: ScoreChanges = {};
   const honbaBonus = dealerWins * GAME_CONSTANTS.HONBA_BONUS_TOTAL;
-  const tableRiichiSticks = (riichiSticks + carryOverRiichiSticks) * GAME_CONSTANTS.RIICHI_STICK_VALUE;
-  
-  const winner = players.find(p => p.id === winnerId);
+  const tableRiichiSticks =
+    (riichiSticks + carryOverRiichiSticks) * GAME_CONSTANTS.RIICHI_STICK_VALUE;
+
+  const winner = players.find((p) => p.id === winnerId);
   const isWinnerDealer = winner?.isDealer || false;
-  const { dealerPay, childPay } = getTsumoPayments(selectedScore, isWinnerDealer);
+  const { dealerPay, childPay } = getTsumoPayments(
+    selectedScore,
+    isWinnerDealer,
+  );
   const honbaPerPlayer = dealerWins * GAME_CONSTANTS.HONBA_INDIVIDUAL;
 
   if (isWinnerDealer) {
     // 親のツモ
-    players.forEach(player => {
+    players.forEach((player) => {
       if (player.id === winnerId) {
-        scoreChanges[player.id] = (childPay * 3) + honbaBonus + tableRiichiSticks;
+        scoreChanges[player.id] = childPay * 3 + honbaBonus + tableRiichiSticks;
       } else {
         scoreChanges[player.id] = -(childPay + honbaPerPlayer);
       }
     });
   } else {
     // 子のツモ
-    players.forEach(player => {
+    players.forEach((player) => {
       if (player.id === winnerId) {
-        scoreChanges[player.id] = dealerPay + (childPay * 2) + honbaBonus + tableRiichiSticks;
+        scoreChanges[player.id] =
+          dealerPay + childPay * 2 + honbaBonus + tableRiichiSticks;
       } else if (player.isDealer) {
         scoreChanges[player.id] = -(dealerPay + honbaPerPlayer);
       } else {
@@ -104,13 +115,14 @@ export const calculateRonScoreChanges = (
   selectedScore: number,
   dealerWins: number,
   riichiSticks: number,
-  carryOverRiichiSticks: number
+  carryOverRiichiSticks: number,
 ): ScoreChanges => {
   const scoreChanges: ScoreChanges = {};
   const honbaBonus = dealerWins * GAME_CONSTANTS.HONBA_BONUS_TOTAL;
-  const tableRiichiSticks = (riichiSticks + carryOverRiichiSticks) * GAME_CONSTANTS.RIICHI_STICK_VALUE;
+  const tableRiichiSticks =
+    (riichiSticks + carryOverRiichiSticks) * GAME_CONSTANTS.RIICHI_STICK_VALUE;
 
-  players.forEach(player => {
+  players.forEach((player) => {
     if (player.id === winnerId) {
       scoreChanges[player.id] = selectedScore + honbaBonus + tableRiichiSticks;
     } else if (player.id === loserId) {
@@ -128,7 +140,7 @@ export const calculateRonScoreChanges = (
  */
 export const calculateDrawScoreChanges = (
   players: Player[],
-  tenpaiPlayers: string[]
+  tenpaiPlayers: string[],
 ): ScoreChanges => {
   const scoreChanges: ScoreChanges = {};
   const tenpaiCount = tenpaiPlayers.length;
@@ -139,7 +151,7 @@ export const calculateDrawScoreChanges = (
     const tenpaiBonus = GAME_CONSTANTS.DRAW_BONUS_TOTAL / tenpaiCount;
     const notenPenalty = GAME_CONSTANTS.DRAW_BONUS_TOTAL / notenCount;
 
-    players.forEach(player => {
+    players.forEach((player) => {
       if (tenpaiPlayers.includes(player.id)) {
         scoreChanges[player.id] = Math.floor(tenpaiBonus);
       } else {
@@ -147,7 +159,7 @@ export const calculateDrawScoreChanges = (
       }
     });
   } else {
-    players.forEach(player => {
+    players.forEach((player) => {
       scoreChanges[player.id] = 0;
     });
   }
@@ -166,8 +178,8 @@ export const isSouthFour = (round: number): boolean => {
  * ゲーム終了判定
  */
 export const shouldEndGame = (players: Player[], round: number): boolean => {
-  const hasNegativeScore = players.some(p => p.score < 0);
+  const hasNegativeScore = players.some((p) => p.score < 0);
   const isAfterSouthFour = round > GAME_CONSTANTS.SOUTH_FOUR_ROUND;
-  
+
   return hasNegativeScore || isAfterSouthFour;
 };

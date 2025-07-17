@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { CARD_STYLES } from '../../constants/ui';
+import type { ReactNode } from "react";
+import { CARD_STYLES } from "../../constants/ui";
 
 interface CardProps {
   children: ReactNode;
@@ -7,12 +7,12 @@ interface CardProps {
   isDealer?: boolean;
 }
 
-export function Card({ children, className = '', isDealer = false }: CardProps) {
+export function Card({
+  children,
+  className = "",
+  isDealer = false,
+}: CardProps) {
   const baseStyles = isDealer ? CARD_STYLES.DEALER : CARD_STYLES.BASE;
-  
-  return (
-    <div className={`${baseStyles} ${className}`}>
-      {children}
-    </div>
-  );
+
+  return <div className={`${baseStyles} ${className}`}>{children}</div>;
 }

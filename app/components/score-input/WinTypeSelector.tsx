@@ -1,14 +1,17 @@
-import { Button } from '../ui';
-import { LABELS } from '../../constants/text';
+import { LABELS } from "../../constants/text";
+import { Button } from "../ui";
 
 interface WinTypeSelectorProps {
-  winType: 'tsumo' | 'ron' | 'draw';
-  onWinTypeChange: (winType: 'tsumo' | 'ron' | 'draw') => void;
+  winType: "tsumo" | "ron" | "draw";
+  onWinTypeChange: (winType: "tsumo" | "ron" | "draw") => void;
 }
 
-export function WinTypeSelector({ winType, onWinTypeChange }: WinTypeSelectorProps) {
+export function WinTypeSelector({
+  winType,
+  onWinTypeChange,
+}: WinTypeSelectorProps) {
   const getButtonVariant = (buttonType: string) => {
-    return winType === buttonType ? 'primary' : 'secondary';
+    return winType === buttonType ? "primary" : "secondary";
   };
 
   return (
@@ -18,20 +21,20 @@ export function WinTypeSelector({ winType, onWinTypeChange }: WinTypeSelectorPro
       </label>
       <div className="grid grid-cols-3 gap-2">
         <Button
-          variant={getButtonVariant('tsumo')}
-          onClick={() => onWinTypeChange('tsumo')}
+          variant={getButtonVariant("tsumo")}
+          onClick={() => onWinTypeChange("tsumo")}
         >
           {LABELS.TSUMO}
         </Button>
         <Button
-          variant={getButtonVariant('ron')}
-          onClick={() => onWinTypeChange('ron')}
+          variant={getButtonVariant("ron")}
+          onClick={() => onWinTypeChange("ron")}
         >
           {LABELS.RON}
         </Button>
         <Button
-          variant={getButtonVariant('draw')}
-          onClick={() => onWinTypeChange('draw')}
+          variant={getButtonVariant("draw")}
+          onClick={() => onWinTypeChange("draw")}
         >
           {LABELS.DRAW}
         </Button>

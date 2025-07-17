@@ -1,5 +1,5 @@
-import type { GameRound, Player } from '../types/game';
-import { getRoundName } from '../utils/gameHelpers';
+import type { GameRound, Player } from "../types/game";
+import { getRoundName } from "../utils/gameHelpers";
 
 interface GameHistoryProps {
   history: GameRound[];
@@ -7,11 +7,10 @@ interface GameHistoryProps {
 }
 
 export function GameHistory({ history, players }: GameHistoryProps) {
-
   const formatTime = (date: Date) => {
-    return new Intl.DateTimeFormat('ja-JP', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("ja-JP", {
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   };
 
@@ -35,7 +34,7 @@ export function GameHistory({ history, players }: GameHistoryProps) {
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
         対局履歴
       </h2>
-      
+
       <div className="space-y-3 flex-1 overflow-y-auto min-h-0">
         {history.map((round, index) => (
           <div
@@ -58,19 +57,21 @@ export function GameHistory({ history, players }: GameHistoryProps) {
                 {formatTime(round.timestamp)}
               </span>
             </div>
-            
+
             <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">
               {round.description}
             </p>
-            
+
             {round.riichiDeclarers && round.riichiDeclarers.length > 0 && (
               <p className="text-xs text-red-600 dark:text-red-400 mb-2">
-                リーチ: {round.riichiDeclarers.map(id => 
-                  players.find(p => p.id === id)?.name
-                ).filter(Boolean).join(', ')}
+                リーチ:{" "}
+                {round.riichiDeclarers
+                  .map((id) => players.find((p) => p.id === id)?.name)
+                  .filter(Boolean)
+                  .join(", ")}
               </p>
             )}
-            
+
             <div className="grid grid-cols-4 gap-2 text-sm">
               {players.map((player) => {
                 const change = round.scores[player.id] || 0;
@@ -82,13 +83,13 @@ export function GameHistory({ history, players }: GameHistoryProps) {
                     <div
                       className={`font-medium ${
                         change > 0
-                          ? 'text-green-600 dark:text-green-400'
+                          ? "text-green-600 dark:text-green-400"
                           : change < 0
-                          ? 'text-red-600 dark:text-red-400'
-                          : 'text-gray-500 dark:text-gray-400'
+                            ? "text-red-600 dark:text-red-400"
+                            : "text-gray-500 dark:text-gray-400"
                       }`}
                     >
-                      {change > 0 && '+'}
+                      {change > 0 && "+"}
                       {change.toLocaleString()}
                     </div>
                   </div>
