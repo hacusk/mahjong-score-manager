@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: |
           pnpm i --frozen-lockfile
-          pnpm run build
+          NODE_ENV=production pnpm run build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
