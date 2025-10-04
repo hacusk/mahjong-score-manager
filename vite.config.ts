@@ -4,6 +4,6 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
-  base: "/mahjong-score-manager",
+  base: "/mahjong-score-manager/",
   plugins: [tailwindcss(), reactRouter(), tsconfigPaths()],
 });
