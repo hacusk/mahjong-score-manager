@@ -299,6 +299,22 @@ export const useGameState = () => {
     }));
   };
 
+  const cancelRiichi = (playerId: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      players: prev.players.map((player) =>
+        player.id === playerId
+          ? {
+              ...player,
+              isRiichi: false,
+              score: player.score + GAME_CONSTANTS.RIICHI_COST,
+            }
+          : player,
+      ),
+      riichiSticks: Math.max(0, prev.riichiSticks - 1),
+    }));
+  };
+
   const checkGameEnd = () => {
     return shouldEndGame(gameState.players, gameState.currentRound);
   };
@@ -353,6 +369,7 @@ export const useGameState = () => {
     addRiichiStick,
     clearRiichiSticks,
     declareRiichi,
+    cancelRiichi,
     checkGameEnd,
     calculatePlayerStats,
     initialScoreOptions: INITIAL_SCORE_OPTIONS,

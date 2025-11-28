@@ -25,6 +25,7 @@ export default function Home() {
     addRiichiStick,
     clearRiichiSticks,
     declareRiichi,
+    cancelRiichi,
     checkGameEnd,
     calculatePlayerStats,
   } = useGameState();
@@ -37,6 +38,7 @@ export default function Home() {
           onUpdatePlayerName={updatePlayerName}
           onStartNewGame={startNewGame}
           onDeclareRiichi={declareRiichi}
+          onCancelRiichi={cancelRiichi}
         />
 
         {gameState.gameStarted && (

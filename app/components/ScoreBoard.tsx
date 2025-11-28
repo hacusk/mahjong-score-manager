@@ -12,6 +12,7 @@ interface ScoreBoardProps {
   onUpdatePlayerName: (playerId: string, name: string) => void;
   onStartNewGame: (initialScore: InitialScore) => void;
   onDeclareRiichi: (playerId: string) => void;
+  onCancelRiichi: (playerId: string) => void;
 }
 
 export function ScoreBoard({
@@ -19,6 +20,7 @@ export function ScoreBoard({
   onUpdatePlayerName,
   onStartNewGame,
   onDeclareRiichi,
+  onCancelRiichi,
 }: ScoreBoardProps) {
   const [isEditingNames, setIsEditingNames] = useState(!gameState.gameStarted);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -83,6 +85,7 @@ export function ScoreBoard({
               onNameChange={(name) => onUpdatePlayerName(player.id, name)}
               isEditing={isEditingNames}
               onDeclareRiichi={() => onDeclareRiichi(player.id)}
+              onCancelRiichi={() => onCancelRiichi(player.id)}
               gameStarted={gameState.gameStarted}
             />
           ))}

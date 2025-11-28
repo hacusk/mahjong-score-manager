@@ -7,6 +7,7 @@ interface PlayerScoreProps {
   onNameChange?: (name: string) => void;
   isEditing?: boolean;
   onDeclareRiichi?: () => void;
+  onCancelRiichi?: () => void;
   gameStarted?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function PlayerScore({
   onNameChange,
   isEditing = false,
   onDeclareRiichi,
+  onCancelRiichi,
   gameStarted = false,
 }: PlayerScoreProps) {
   const getRankEmoji = (rank: number) => {
@@ -126,13 +128,25 @@ export function PlayerScore({
         </div>
 
         {player.isRiichi && (
-          <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded text-xs font-medium">
-            リーチ中
+          <div className="mt-2 flex items-center justify-center gap-2">
+            <span className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded text-xs font-medium">
+              リーチ中
+            </span>
+            {onCancelRiichi && (
+              <button
+                type="button"
+                onClick={onCancelRiichi}
+                className="px-2 py-1 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded transition-colors"
+              >
+                取消
+              </button>
+            )}
           </div>
         )}
 
         {gameStarted && !player.isRiichi && onDeclareRiichi && (
           <button
+            type="button"
             onClick={onDeclareRiichi}
             className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition-colors"
           >
