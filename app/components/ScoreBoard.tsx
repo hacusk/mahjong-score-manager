@@ -1,4 +1,8 @@
 import { useState } from "react";
+import {
+  INITIAL_SCORE_OPTIONS,
+  type InitialScore,
+} from "../constants/game";
 import type { GameState } from "../types/game";
 import { getRoundName } from "../utils/gameHelpers";
 import { PlayerScore } from "./PlayerScore";
@@ -6,7 +10,7 @@ import { PlayerScore } from "./PlayerScore";
 interface ScoreBoardProps {
   gameState: GameState;
   onUpdatePlayerName: (playerId: string, name: string) => void;
-  onStartNewGame: () => void;
+  onStartNewGame: (initialScore: InitialScore) => void;
   onDeclareRiichi: (playerId: string) => void;
 }
 
@@ -17,6 +21,7 @@ export function ScoreBoard({
   onDeclareRiichi,
 }: ScoreBoardProps) {
   const [isEditingNames, setIsEditingNames] = useState(!gameState.gameStarted);
+  const [showStartModal, setShowStartModal] = useState(false);
 
   const sortedPlayers = [...gameState.players].sort(
     (a, b) => b.score - a.score,
@@ -60,7 +65,7 @@ export function ScoreBoard({
             )}
 
             <button
-              onClick={onStartNewGame}
+              onClick={() => setShowStartModal(true)}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
             >
               {gameState.gameStarted ? "新規ゲーム" : "ゲーム開始"}
@@ -83,6 +88,37 @@ export function ScoreBoard({
           ))}
         </div>
       </div>
+
+      {/* 初期持ち点選択モーダル */}
+      {showStartModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-sm w-full mx-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+              初期持ち点を選択
+            </h2>
+            <div className="flex flex-col gap-3">
+              {INITIAL_SCORE_OPTIONS.map((score) => (
+                <button
+                  key={score}
+                  onClick={() => {
+                    onStartNewGame(score);
+                    setShowStartModal(false);
+                  }}
+                  className="px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-lg font-medium"
+                >
+                  {score.toLocaleString()}点
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowStartModal(false)}
+              className="mt-4 w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

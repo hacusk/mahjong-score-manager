@@ -40,6 +40,7 @@ export interface GameState {
   gameEnded: boolean;
   gamePhase: GamePhase;
   lastRoundResult?: LastRoundResult;
+  initialScore: number; // ゲーム開始時の持ち点（25000 or 30000）
 }
 
 export interface ScoreChanges {

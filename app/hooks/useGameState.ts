@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { GAME_CONSTANTS, WINDS } from "../constants/game";
+import {
+  GAME_CONSTANTS,
+  INITIAL_SCORE_OPTIONS,
+  WINDS,
+  type InitialScore,
+} from "../constants/game";
 import type {
   GameRound,
   GameState,
@@ -17,12 +22,14 @@ import {
 
 const STORAGE_KEY = "mahjong-game-state";
 
-const initialState: GameState = {
+const createInitialState = (
+  initialScore: InitialScore = GAME_CONSTANTS.DEFAULT_INITIAL_SCORE,
+): GameState => ({
   players: [
     {
       id: "1",
       name: "東家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      score: initialScore,
       isDealer: true,
       wind: "東",
       isRiichi: false,
@@ -30,7 +37,7 @@ const initialState: GameState = {
     {
       id: "2",
       name: "南家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      score: initialScore,
       isDealer: false,
       wind: "南",
       isRiichi: false,
@@ -38,7 +45,7 @@ const initialState: GameState = {
     {
       id: "3",
       name: "西家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      score: initialScore,
       isDealer: false,
       wind: "西",
       isRiichi: false,
@@ -46,7 +53,7 @@ const initialState: GameState = {
     {
       id: "4",
       name: "北家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      score: initialScore,
       isDealer: false,
       wind: "北",
       isRiichi: false,
@@ -60,7 +67,10 @@ const initialState: GameState = {
   gameStarted: false,
   gameEnded: false,
   gamePhase: "playing",
-};
+  initialScore,
+});
+
+const initialState: GameState = createInitialState();
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -88,16 +98,16 @@ export const useGameState = () => {
     }
   }, [gameState]);
 
-  const startNewGame = () => {
+  const startNewGame = (initialScore: InitialScore) => {
     setGameState({
-      ...initialState,
+      ...createInitialState(initialScore),
       gameStarted: true,
       gameEnded: false,
       gamePhase: "playing",
       carryOverRiichiSticks: 0,
       players: gameState.players.map((p, index) => ({
         ...p,
-        score: GAME_CONSTANTS.INITIAL_SCORE,
+        score: initialScore,
         isDealer: index === 0,
         wind: WINDS[index],
         isRiichi: false,
@@ -345,5 +355,6 @@ export const useGameState = () => {
     declareRiichi,
     checkGameEnd,
     calculatePlayerStats,
+    initialScoreOptions: INITIAL_SCORE_OPTIONS,
   };
 };

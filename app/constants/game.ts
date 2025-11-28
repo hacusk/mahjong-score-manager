@@ -1,6 +1,9 @@
 // ゲーム設定の定数
+export const INITIAL_SCORE_OPTIONS = [25000, 30000] as const;
+export type InitialScore = (typeof INITIAL_SCORE_OPTIONS)[number];
+
 export const GAME_CONSTANTS = {
-  INITIAL_SCORE: 30000,
+  DEFAULT_INITIAL_SCORE: 25000 as InitialScore,
   RIICHI_COST: 1000,
   RIICHI_STICK_VALUE: 1000,
   HONBA_BONUS_TOTAL: 300,
