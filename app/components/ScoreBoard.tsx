@@ -6,17 +6,15 @@ import { PlayerScore } from "./PlayerScore";
 interface ScoreBoardProps {
   gameState: GameState;
   onUpdatePlayerName: (playerId: string, name: string) => void;
-  onStartNewGame: () => void;
-  onDeclareRiichi: (playerId: string) => void;
+  onNewGame: () => void; // ゲーム設定画面に戻る
 }
 
 export function ScoreBoard({
   gameState,
   onUpdatePlayerName,
-  onStartNewGame,
-  onDeclareRiichi,
+  onNewGame,
 }: ScoreBoardProps) {
-  const [isEditingNames, setIsEditingNames] = useState(!gameState.gameStarted);
+  const [isEditingNames, setIsEditingNames] = useState(false);
 
   const sortedPlayers = [...gameState.players].sort(
     (a, b) => b.score - a.score,
@@ -25,63 +23,65 @@ export function ScoreBoard({
     sortedPlayers.map((player, index) => [player.id, index + 1]),
   );
 
+  const totalRiichiSticks =
+    gameState.riichiSticks + gameState.carryOverRiichiSticks;
+
   return (
-    <div className="w-full max-w-6xl mx-auto p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              麻雀点数計算
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              {gameState.gameEnded ? (
-                <span className="text-red-600 dark:text-red-400 font-semibold">
-                  ゲーム終了
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm ring-1 ring-gray-100 dark:ring-gray-700">
+      {/* ヘッダーバー */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+        <div className="flex items-center gap-3 min-w-0">
+          {gameState.gameEnded ? (
+            <span className="text-base font-bold text-red-600 dark:text-red-400">
+              ゲーム終了
+            </span>
+          ) : (
+            <>
+              <span className="text-base font-bold text-gray-900 dark:text-gray-100">
+                {getRoundName(gameState.currentRound)}
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {gameState.dealerWins}本場
+              </span>
+              {totalRiichiSticks > 0 && (
+                <span className="text-sm font-medium text-orange-500 dark:text-orange-400">
+                  供託{totalRiichiSticks}本
                 </span>
-              ) : (
-                <>
-                  {getRoundName(gameState.currentRound)} {gameState.dealerWins}
-                  本場
-                  {gameState.carryOverRiichiSticks > 0 &&
-                    ` 供託: ${gameState.carryOverRiichiSticks}本`}
-                </>
               )}
-            </p>
-          </div>
-
-          <div className="flex gap-2">
-            {gameState.gameStarted && (
-              <button
-                onClick={() => setIsEditingNames(!isEditingNames)}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-              >
-                {isEditingNames ? "名前を確定" : "名前を編集"}
-              </button>
-            )}
-
-            <button
-              onClick={onStartNewGame}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              {gameState.gameStarted ? "新規ゲーム" : "ゲーム開始"}
-            </button>
-          </div>
+            </>
+          )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {gameState.players.map((player) => (
-            <PlayerScore
-              key={player.id}
-              player={player}
-              rank={playerRanks.get(player.id) || 0}
-              allPlayers={gameState.players}
-              onNameChange={(name) => onUpdatePlayerName(player.id, name)}
-              isEditing={isEditingNames}
-              onDeclareRiichi={() => onDeclareRiichi(player.id)}
-              gameStarted={gameState.gameStarted}
-            />
-          ))}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsEditingNames(!isEditingNames)}
+            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors min-h-[36px]"
+          >
+            {isEditingNames ? "確定" : "名前編集"}
+          </button>
+          <button
+            type="button"
+            onClick={onNewGame}
+            className="px-3 py-1.5 text-xs font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-400 rounded-lg transition-colors min-h-[36px]"
+          >
+            新規ゲーム
+          </button>
         </div>
+      </div>
+
+      {/* プレイヤーグリッド */}
+      <div className="p-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {gameState.players.map((player) => (
+          <PlayerScore
+            key={player.id}
+            player={player}
+            rank={playerRanks.get(player.id) ?? 0}
+            allPlayers={gameState.players}
+            onNameChange={(name) => onUpdatePlayerName(player.id, name)}
+            isEditing={isEditingNames}
+          />
+        ))}
       </div>
     </div>
   );

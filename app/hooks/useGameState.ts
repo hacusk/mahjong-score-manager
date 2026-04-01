@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { GAME_CONSTANTS, WINDS } from "../constants/game";
 import type {
   GameRound,
+  GameSettings,
   GameState,
   LastRoundResult,
   Player,
@@ -9,7 +10,6 @@ import type {
 } from "../types/game";
 import {
   getNextDealerIndex,
-  getRoundName,
   isSouthFour,
   rotateWinds,
   shouldEndGame,
@@ -17,36 +17,44 @@ import {
 
 const STORAGE_KEY = "mahjong-game-state";
 
-const initialState: GameState = {
+const DEFAULT_SETTINGS: GameSettings = {
+  initialScore: 25000, // オカあり = 25,000点スタート
+  drawHonbaIncrement: 1,
+  playerNames: ["東家", "南家", "西家", "北家"],
+  uma: [20, 10, -10, -20],
+  hasOka: true,
+};
+
+const makeInitialState = (settings: GameSettings = DEFAULT_SETTINGS): GameState => ({
   players: [
     {
       id: "1",
-      name: "東家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      name: settings.playerNames[0],
+      score: settings.initialScore,
       isDealer: true,
       wind: "東",
       isRiichi: false,
     },
     {
       id: "2",
-      name: "南家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      name: settings.playerNames[1],
+      score: settings.initialScore,
       isDealer: false,
       wind: "南",
       isRiichi: false,
     },
     {
       id: "3",
-      name: "西家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      name: settings.playerNames[2],
+      score: settings.initialScore,
       isDealer: false,
       wind: "西",
       isRiichi: false,
     },
     {
       id: "4",
-      name: "北家",
-      score: GAME_CONSTANTS.INITIAL_SCORE,
+      name: settings.playerNames[3],
+      score: settings.initialScore,
       isDealer: false,
       wind: "北",
       isRiichi: false,
@@ -60,7 +68,8 @@ const initialState: GameState = {
   gameStarted: false,
   gameEnded: false,
   gamePhase: "playing",
-};
+  settings,
+});
 
 export const useGameState = () => {
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -73,13 +82,26 @@ export const useGameState = () => {
             ...round,
             timestamp: new Date(round.timestamp),
           }));
+          // 旧データにsettingsがない場合はデフォルト値を付与
+          if (!parsed.settings) {
+            parsed.settings = DEFAULT_SETTINGS;
+          }
+          // 旧データに uma / hasOka がない場合は fallback
+          if (!parsed.settings.uma) {
+            parsed.settings.uma = [20, 10, -10, -20];
+          }
+          if (parsed.settings.hasOka === undefined) {
+            parsed.settings.hasOka = true;
+          }
+          // 旧データの returnScore は不要なので削除
+          delete parsed.settings.returnScore;
           return parsed;
         } catch (e) {
           console.error("Failed to parse saved game state:", e);
         }
       }
     }
-    return initialState;
+    return makeInitialState();
   });
 
   useEffect(() => {
@@ -88,21 +110,15 @@ export const useGameState = () => {
     }
   }, [gameState]);
 
-  const startNewGame = () => {
+  const startNewGame = (settings: GameSettings) => {
     setGameState({
-      ...initialState,
+      ...makeInitialState(settings),
       gameStarted: true,
-      gameEnded: false,
-      gamePhase: "playing",
-      carryOverRiichiSticks: 0,
-      players: gameState.players.map((p, index) => ({
-        ...p,
-        score: GAME_CONSTANTS.INITIAL_SCORE,
-        isDealer: index === 0,
-        wind: WINDS[index],
-        isRiichi: false,
-      })),
     });
+  };
+
+  const resetToSetup = () => {
+    setGameState(makeInitialState());
   };
 
   const updatePlayerName = (playerId: string, name: string) => {
@@ -167,25 +183,25 @@ export const useGameState = () => {
       if (!prev.lastRoundResult) return prev;
 
       const { dealerWon, wasDraw } = prev.lastRoundResult;
+      const drawIncrement = prev.settings.drawHonbaIncrement;
 
       if (wasDraw) {
-        // 流局の場合は必ず本場+2
         if (dealerWon) {
           // 親がテンパイの場合は連荘
           return {
             ...prev,
-            dealerWins: prev.dealerWins + 2,
+            dealerWins: prev.dealerWins + drawIncrement,
             gamePhase: "playing",
             lastRoundResult: undefined,
-            riichiSticks: 0, // 新しい局では現在のリーチ棒をリセット
-            carryOverRiichiSticks: prev.riichiSticks, // 前局のリーチ棒を供託として持ち越し
+            riichiSticks: 0,
+            carryOverRiichiSticks: prev.riichiSticks,
             players: prev.players.map((player) => ({
               ...player,
-              isRiichi: false, // 新しい局ではリーチ状態をリセット
+              isRiichi: false,
             })),
           };
         } else {
-          // 親がノーテンの場合は親流れだが本場は+2
+          // 親がノーテンの場合は親流れ
 
           // 南4局で親がノーテンの場合はゲーム終了
           if (isSouthFour(prev.currentRound)) {
@@ -205,27 +221,27 @@ export const useGameState = () => {
             ...prev,
             players: rotatedPlayers,
             currentRound: prev.currentRound + 1,
-            dealerWins: prev.dealerWins + 2, // 流局時は必ず本場+2
+            dealerWins: prev.dealerWins + drawIncrement,
             gamePhase: "playing",
             lastRoundResult: undefined,
-            riichiSticks: 0, // 新しい局では現在のリーチ棒をリセット
-            carryOverRiichiSticks: prev.riichiSticks, // 前局のリーチ棒を供託として持ち越し
+            riichiSticks: 0,
+            carryOverRiichiSticks: prev.riichiSticks,
           };
         }
       }
 
       if (dealerWon) {
-        // 和了時の連荘
+        // 親の和了時の連荘
         return {
           ...prev,
           dealerWins: prev.dealerWins + 1,
           gamePhase: "playing",
           lastRoundResult: undefined,
-          riichiSticks: 0, // 和了があった場合はリーチ棒をクリア
-          carryOverRiichiSticks: 0, // 和了があった場合は供託もクリア
+          riichiSticks: 0,
+          carryOverRiichiSticks: 0,
           players: prev.players.map((player) => ({
             ...player,
-            isRiichi: false, // 新しい局ではリーチ状態をリセット
+            isRiichi: false,
           })),
         };
       }
@@ -250,11 +266,11 @@ export const useGameState = () => {
         ...prev,
         players: rotatedPlayers,
         currentRound: prev.currentRound + 1,
-        dealerWins: 0, // 子の和了時は本場リセット
+        dealerWins: 0,
         gamePhase: "playing",
         lastRoundResult: undefined,
-        riichiSticks: 0, // 和了があった場合はリーチ棒をクリア
-        carryOverRiichiSticks: 0, // 和了があった場合は供託もクリア
+        riichiSticks: 0,
+        carryOverRiichiSticks: 0,
       };
     });
   };
@@ -286,6 +302,22 @@ export const useGameState = () => {
           : player,
       ),
       riichiSticks: prev.riichiSticks + 1,
+    }));
+  };
+
+  const cancelRiichi = (playerId: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      players: prev.players.map((player) =>
+        player.id === playerId
+          ? {
+              ...player,
+              isRiichi: false,
+              score: player.score + GAME_CONSTANTS.RIICHI_COST,
+            }
+          : player,
+      ),
+      riichiSticks: Math.max(0, prev.riichiSticks - 1),
     }));
   };
 
@@ -337,12 +369,14 @@ export const useGameState = () => {
   return {
     gameState,
     startNewGame,
+    resetToSetup,
     updatePlayerName,
     updateScores,
     nextRound,
     addRiichiStick,
     clearRiichiSticks,
     declareRiichi,
+    cancelRiichi,
     checkGameEnd,
     calculatePlayerStats,
   };

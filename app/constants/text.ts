@@ -71,17 +71,6 @@ export const SCORE_BREAKDOWN = {
   RIICHI_STICK: "リーチ棒",
 } as const;
 
-// Wind names
-export const WINDS = ["東", "南", "西", "北"] as const;
-
-// Round names helper
-export const getRoundName = (round: number): string => {
-  if (round <= 4) return `東${round}局`;
-  if (round <= 8) return `南${round - 4}局`;
-  if (round <= 12) return `西${round - 8}局`;
-  return `北${round - 12}局`;
-};
-
 // Honba display helper
 export const getHonbaText = (honba: number): string => `${honba}本場`;
 

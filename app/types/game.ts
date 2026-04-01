@@ -1,5 +1,13 @@
 import type { GamePhase, Wind } from "../constants/game";
 
+export interface GameSettings {
+  initialScore: number;
+  drawHonbaIncrement: 1 | 2; // 流局時の本場加算数
+  playerNames: [string, string, string, string];
+  uma: [number, number, number, number]; // 順位ウマ [1位, 2位, 3位, 4位]（単位: pt）
+  hasOka: boolean; // オカあり = 返し点30,000固定でオカ計算
+}
+
 export interface Player {
   id: string;
   name: string;
@@ -40,6 +48,7 @@ export interface GameState {
   gameEnded: boolean;
   gamePhase: GamePhase;
   lastRoundResult?: LastRoundResult;
+  settings: GameSettings;
 }
 
 export interface ScoreChanges {

@@ -6,8 +6,29 @@ interface PlayerScoreProps {
   allPlayers: Player[];
   onNameChange?: (name: string) => void;
   isEditing?: boolean;
-  onDeclareRiichi?: () => void;
-  gameStarted?: boolean;
+}
+
+const WIND_COLORS: Record<string, string> = {
+  東: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  南: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  西: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  北: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+};
+
+const RANK_COLORS: Record<number, string> = {
+  1: "text-yellow-500",
+  2: "text-gray-400",
+  3: "text-orange-400",
+  4: "text-gray-500",
+};
+
+const RANK_NUMERALS = ["", "1st", "2nd", "3rd", "4th"];
+
+function getScoreColor(score: number): string {
+  if (score >= 30000) return "text-green-600 dark:text-green-400";
+  if (score >= 20000) return "text-gray-900 dark:text-gray-100";
+  if (score >= 10000) return "text-orange-500 dark:text-orange-400";
+  return "text-red-600 dark:text-red-400";
 }
 
 export function PlayerScore({
@@ -16,63 +37,23 @@ export function PlayerScore({
   allPlayers,
   onNameChange,
   isEditing = false,
-  onDeclareRiichi,
-  gameStarted = false,
 }: PlayerScoreProps) {
-  const getRankEmoji = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return "🥇";
-      case 2:
-        return "🥈";
-      case 3:
-        return "🥉";
-      case 4:
-        return "💀";
-      default:
-        return "";
-    }
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 30000) return "text-green-600 dark:text-green-400";
-    if (score >= 20000) return "text-gray-900 dark:text-gray-100";
-    if (score >= 10000) return "text-orange-600 dark:text-orange-400";
-    return "text-red-600 dark:text-red-400";
-  };
-
-  const getWindColor = (wind: string) => {
-    switch (wind) {
-      case "東":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
-      case "南":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "西":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "北":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      default:
-        return "";
-    }
-  };
+  const windColor = WIND_COLORS[player.wind] ?? "";
+  const rankColor = RANK_COLORS[rank] ?? "text-gray-500";
 
   return (
     <div
       className={`
-      relative p-6 rounded-lg shadow-lg transition-all duration-300
-      ${player.isDealer ? "bg-yellow-50 dark:bg-yellow-900/20 ring-2 ring-yellow-400" : "bg-white dark:bg-gray-800"}
-    `}
+        relative flex flex-col p-4 rounded-xl transition-all duration-200
+        ${player.isDealer
+          ? "bg-yellow-50 dark:bg-yellow-900/20 ring-2 ring-yellow-400"
+          : "bg-white dark:bg-gray-800 ring-1 ring-gray-100 dark:ring-gray-700"}
+      `}
     >
-      <div className="absolute top-2 right-2 text-2xl">
-        {getRankEmoji(rank)}
-      </div>
-
-      <div className="flex items-center gap-3 mb-4">
+      {/* ヘッダー行：風・名前・親バッジ */}
+      <div className="flex items-center gap-2 mb-3">
         <span
-          className={`
-          inline-flex items-center justify-center w-10 h-10 rounded-full text-lg font-bold
-          ${getWindColor(player.wind)}
-        `}
+          className={`inline-flex items-center justify-center w-9 h-9 rounded-full text-base font-bold shrink-0 ${windColor}`}
         >
           {player.wind}
         </span>
@@ -82,63 +63,63 @@ export function PlayerScore({
             type="text"
             value={player.name}
             onChange={(e) => onNameChange?.(e.target.value)}
-            className="flex-1 px-3 py-1 text-lg font-semibold bg-gray-100 dark:bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 min-w-0 px-2 py-1 text-base font-semibold bg-gray-100 dark:bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="プレイヤー名"
           />
         ) : (
-          <h3 className="flex-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <span className="flex-1 min-w-0 text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
             {player.name}
-          </h3>
+          </span>
         )}
 
         {player.isDealer && (
-          <span className="px-2 py-1 text-xs font-medium bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200 rounded">
+          <span className="shrink-0 px-1.5 py-0.5 text-xs font-bold bg-yellow-200 text-yellow-800 dark:bg-yellow-700 dark:text-yellow-100 rounded">
             親
+          </span>
+        )}
+
+        {player.isRiichi && (
+          <span className="shrink-0 px-1.5 py-0.5 text-xs font-bold bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300 rounded">
+            リーチ
           </span>
         )}
       </div>
 
-      <div className="text-center">
-        <div className={`text-3xl font-bold ${getScoreColor(player.score)}`}>
+      {/* 点数表示 */}
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className={`text-3xl font-bold tabular-nums ${getScoreColor(player.score)}`}>
           {player.score.toLocaleString()}
-        </div>
-        <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 space-y-1">
-          {allPlayers
-            .filter((p) => p.id !== player.id)
-            .sort((a, b) => b.score - a.score)
-            .map((otherPlayer) => {
-              const diff = player.score - otherPlayer.score;
-              return (
-                <div
-                  key={otherPlayer.id}
-                  className="flex justify-between items-center"
+        </span>
+        <span className={`text-xs font-semibold uppercase tracking-wider ${rankColor}`}>
+          {RANK_NUMERALS[rank]}
+        </span>
+      </div>
+
+      {/* 他プレイヤーとの差分 */}
+      <div className="space-y-0.5">
+        {allPlayers
+          .filter((p) => p.id !== player.id)
+          .sort((a, b) => b.score - a.score)
+          .map((other) => {
+            const diff = player.score - other.score;
+            return (
+              <div key={other.id} className="flex justify-between items-center text-xs">
+                <span className="text-gray-400 dark:text-gray-500 truncate mr-2">
+                  {other.name}
+                </span>
+                <span
+                  className={`font-medium tabular-nums ${
+                    diff >= 0
+                      ? "text-green-600 dark:text-green-400"
+                      : "text-red-500 dark:text-red-400"
+                  }`}
                 >
-                  <span className="truncate mr-2">{otherPlayer.name}:</span>
-                  <span
-                    className={`font-medium ${diff >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
-                  >
-                    {diff >= 0 ? "+" : ""}
-                    {diff.toLocaleString()}
-                  </span>
-                </div>
-              );
-            })}
-        </div>
-
-        {player.isRiichi && (
-          <div className="mt-2 px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded text-xs font-medium">
-            リーチ中
-          </div>
-        )}
-
-        {gameStarted && !player.isRiichi && onDeclareRiichi && (
-          <button
-            onClick={onDeclareRiichi}
-            className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition-colors"
-          >
-            リーチ
-          </button>
-        )}
+                  {diff >= 0 ? "+" : ""}
+                  {diff.toLocaleString()}
+                </span>
+              </div>
+            );
+          })}
       </div>
     </div>
   );
