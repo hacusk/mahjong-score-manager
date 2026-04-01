@@ -132,3 +132,38 @@ pnpm typecheck
 - [ ] ゲーム履歴のエクスポート機能
 - [ ] 統計情報の表示（平均順位、和了率など）
 - [ ] カスタムルール設定（初期点数、ウマなど）
+
+## AI Development Workflow (AI-DLC)
+
+このプロジェクトはAWS AI Developer Lifecycle Companion (AI-DLC) ワークフローを採用しています。
+
+### ワークフロー概要
+
+ソフトウェア開発タスクを実施する際は、`.aws-aidlc-rules/core-workflow.md` に定義されたワークフローに従ってください。
+
+**フェーズ構成**:
+1. **INCEPTION PHASE** — 要件定義・設計
+   - Workspace Detection → Reverse Engineering（必要時）→ Requirements Analysis → User Stories → Workflow Planning → Application Design → Units Generation
+2. **CONSTRUCTION PHASE** — 実装
+   - Per-Unit Loop: Functional Design → NFR Requirements → NFR Design → Infrastructure Design → Code Generation
+   - Build and Test
+3. **OPERATIONS PHASE** — デプロイ・運用（将来拡張）
+
+### ルール詳細ファイルの場所
+
+ルール詳細は `.aws-aidlc-rule-details/` に格納されています（gitignore対象）。
+
+- `common/` — 共通ルール（プロセス概要、セッション継続性、コンテンツ検証、質問フォーマット）
+- `inception/` — INCEPTION フェーズの詳細ルール
+- `construction/` — CONSTRUCTION フェーズの詳細ルール
+- `extensions/` — オプション拡張ルール（セキュリティ等）
+- `operations/` — OPERATIONS フェーズの詳細ルール
+
+### ドキュメント出力先
+
+AI-DLC が生成するドキュメントは `aidlc-docs/` ディレクトリに出力されます（アプリケーションコードとは分離）。
+
+### 注意事項
+
+- `.aws-aidlc-rules/` および `.aws-aidlc-rule-details/` はgit管理外（`.gitignore`に記載）
+- 生成された `aidlc-docs/` はプロジェクトの状況に応じてgit管理に含めることができる
